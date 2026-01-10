@@ -11,7 +11,16 @@ function Step8_List(){
 
     const [newTodoText, setNewTodoText] = useState(''); // 새 할 일 입력값 state 만들기 
 
-    //formInput.trim()
+    //사용자 목록
+    const users = [
+        {id : 1, name:'김유저', age : 20, job: '개발자'},
+        {id : 2, name:'박자바', age : 25, job: '의사'},
+        {id : 3, name:'이라클', age : 30, job: '소방관'}
+
+    ];
+
+    //과일 목록
+    const fruits = ['딸기','망고','오렌지','메론','수박']
 
     
     //새로운 할일 담을 변수 준비  (변수명 자유)
@@ -32,7 +41,7 @@ function Step8_List(){
             return;
         }
 
-        setTodos((todos) => [
+        setTodos((todos) => [ // 기존 객체배열에 있던 데이터 스프레드 연산자로 풀어넣어주고 새로운 객체 추가 
             ...todos,{id : Date.now(),text,completed: false}, // 스프레드 연산자 이용
         ]);
 
@@ -46,7 +55,7 @@ function Step8_List(){
     //todos 목록 자체에서 찾아내어 수정해야함 **
 
     const completeWork = (id) => {
-        setTodos((todos) =>
+        setTodos(
         todos.map((todo) =>
             todo.id === id ? {...todo, completed : !todo.completed} : todo
         )
@@ -57,6 +66,15 @@ function Step8_List(){
 
     //할일 삭제 이벤트 핸들러 (함수명 자유)
     //어떠한 대상이 삭제되어야하는지 식별자를 전달받아 해당 값을 이용하여 기존 목록에서 제거한 목록으로 수정해보기
+    const deleteTodo = (id) => {
+
+        //전달받은 id값이랑 일치하는 id값을 가진 객체는 제외하고 나머지 목록을 반환시켜서 state 갱신하기
+        //filter 함수를 사용하여 id값과 일치하지 않는 대상들만 모아 배열로 반환시키면 된다.
+
+
+        setTodos(todos.filter(todo => todo.id !== id));
+
+    }
 
 
 
@@ -102,6 +120,7 @@ function Step8_List(){
                             // 해당 객체에 있던 id (식별자)를 이용하여 key값 추가 
                             <div key={todo.id} style={styles.todoItem}>
                                 <span
+                                    //어떠한 목록이 선택되었는지 확인할 수 있는 식별자 전달하기 
                                     onClick={() => completeWork(todo.id)}
                                     //각 todo에 있는 completed 속성값이 true라면 스타일 부여 아니라면 스타일 X 
                                     style={{...(todo.completed? styles.completed : {}),cursor:'pointer'}}>
@@ -109,7 +128,7 @@ function Step8_List(){
                                     {todo.completed? '✅':'⬜'} {todo.text}
                                 </span>
                                 <button style={styles.deleteButton}
-                                        //onClick={}
+                                        onClick={() => deleteTodo(todo.id)}
                                         >
                                     삭제
                                 </button>
@@ -124,6 +143,102 @@ function Step8_List(){
 
             </div>
 
+            <div style={styles.section}>
+                <h2>2. 정적 리스트 - 사용자 목록</h2>
+
+                {/*위에서 정의한 사용자 목록을 출력해보기 */}
+                { /* div style userCard를 사용
+                     이름은 h3태그
+                     나이,직업은 p태그를 이용하여 출력해보기
+                */}
+
+                {
+                    users.map(user => (
+                        <div key={user.id} style={styles.userCard}>
+                            <h3>이름 : {user.name}</h3>
+                            <p>나이 : {user.age}</p>
+                            <p>직업 : {user.job}</p>
+                        </div>    
+                    ))
+                }
+
+
+            </div>
+
+            
+
+            <div style={styles.section}>
+                <h2>3. 간단한 리스트 - 과일 목록</h2>
+                {/* 위에서 정의한 과일 목록 배열 출력해보기 */}
+                {/* span태그 이용하여 출력 스타일은 fruitItem 사용 */}
+                 {/* user.hobby.map((hb,index) => (
+                            <li key={index}>{hb}</li>
+                        )*/}
+
+                {
+                    fruits.map((fruit,index) =>
+                      ( 
+                            <span style={styles.fruitItem} key={index}>{fruit}</span>  
+                      )
+                    )
+                }
+
+            </div>
+
+            <p>
+               *인덱스를 key로 사용하는 경우는 배열이 변경되지 않을 경우에만 권장   
+            </p>
+
+            <div style={styles.section}>
+                <h2>4. 필터링된 리스트</h2>
+                <h3>완료된 할일 : </h3>
+                {/* div 태그로 완료된 할일만 뽑아보기 */}
+                {/* filter 함수를 이용하여 조건에 부합하는 목록 추출 후 map으로 출력하기*/}
+                <div>
+                    {
+                        todos.map(todo => (
+                            <div style={styles.completed} key={todo.id}>
+
+                                {/*완료 된 것만 나오게하기 */}
+                                {todo.completed && todo.text} 
+                                {/*todos.filter(todo => todo.completed)map(todo =>
+                                    (<div key={todo.id}> {todo.text}</div>))*/}
+
+                            </div>
+                        ))
+                    }
+
+                </div>
+                
+
+                <h2>미완료 할일 : </h2>
+                {/* div태그로 미완료 할일만 뽑아보기 */}
+                <div>
+                    {
+                        todos.map(todo => (
+                            <div style={styles.completed} key={todo.id}>
+
+                                {/*미완료 된 것만 나오게 하기*/}
+
+                                {todo.completed || todo.text}
+
+                            </div>
+                        ))
+                    }
+
+                </div>    
+            </div>
+
+            <div style={styles.section}>
+                <h3>리스트 렌더링 시 key의 필요성</h3>
+                <ul>
+                    <li>key는 리스트(배열) 렌더링 시 각 아이템을 식별하기 위한 고유 식별자(이름표)이다.</li>
+                    <li>하나의 리스트 내에서 key값은 형제 요소간에서 반드시 고유해야한다.</li>
+                    <li>데이터가 가진 고유한 id를 key로 사용하는것이 가장 이상적이다.</li>
+                    <li>배열의 index를 key로 사용할 시 배열로 변경되면 성능 저하 또는 오류가 발생할 수 있다.</li>
+                    <li>key는 리액트가 사용하는 특별한 식별용 속성으로 props로 전달되지 않는다.</li>
+                </ul>    
+            </div>        
         </div>
 
 

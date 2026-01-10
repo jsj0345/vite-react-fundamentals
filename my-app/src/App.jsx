@@ -10,6 +10,14 @@ import Step5_Hooks from './05_Hooks.jsx'
 import Step6_Events from './06_EventHandler.jsx'
 import Step7_Conditional from './07_Conditional.jsx'
 import Step8_List from './08_List.jsx'
+import FragmentExample from './09_Fragment.jsx'
+import ContextComponent from './10_Context.jsx'
+import LoginExample from './99_Contextex.jsx'
+import CartExample from './100_ContextEx.jsx'
+import RouterComponent from './11_Router.jsx'
+import RefComponent from './12_Ref.jsx'
+
+
 
 function App() {
   
@@ -58,7 +66,38 @@ function App() {
         <h2>List (목록 렌더링)</h2>
         <Step8_List></Step8_List>
       </section>
+
+      <section>
+        <h2>Fragment 사용</h2>
+        <FragmentExample></FragmentExample>
+      </section>
+
+      <section>
+        <h2>Context 활용</h2>
+        <ContextComponent></ContextComponent>
+      </section>
+
+      <section>
+        <h2>로그인 예제</h2>
+        <LoginExample></LoginExample>
+      </section>
+
+      <section>
+        <h2>장바구니 예제</h2>
+        <CartExample></CartExample>
+      </section>
+
+      <section>
+        <RouterComponent></RouterComponent>
+      </section>
+
+      <section>
+        <h2>Ref 사용해보기</h2>
+        <RefComponent></RefComponent>
+      </section>
     </div>
+
+
   )
 }
 

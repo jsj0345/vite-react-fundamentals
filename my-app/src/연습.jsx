@@ -1,126 +1,576 @@
+//React Router 사용법 - 페이지간의 이동과 라우팅
+//터미널에서 npm install react-router-dom 명령어를 입력하여 라이브러리 설치부터 진행
 
-//이벤트 처리 : 사용자 상호 작용(클릭,입력 등등)
+import { useEffect, useState } from 'react';
+import {
+    BrowserRouter as Router, // as 별칭 가능, HTML5 History API를 사용하는 라우터 (기본적으로 Route 처리를 하기 위해 컴포넌트 전체를 감싸는 형태로 사용)
+    Link, // 페이지 이동을 위한 링크 컴포넌트(새로고침 없이 이동)
+    NavLink, // 활성 링크 스타일링이 가능한 Link 컴포넌트
+    Route, // 개별 라우트를 정의하는 컴포넌트(요청경로에 대해서 어떠한 컴포넌트를 보여줄것인지 연결시켜주는 컴포넌트)
+    Routes, // 개별 라우트들을 묶어서 감싸주는 컨테이너 컴포넌트 
+    useParams, // URL 파라미터를 가지고 오는 Hook (ex) /user/:id 에서 id값 추출)
+    useLocation, // 현재 위치 정보(pathname,search,hash)등을 가지고 오는 훅
+    useNavigate, // 프로그래밍적으로 페이지 이동을 시킬때 사용하는 훅
+    Navigate, // 프로그래밍적으로 리다이렉트할때 사용하는 컴포넌트
+    Outlet, // 중첩 라우팅 환경에서 자식 컴포넌트가 렌더링 될 위치를 지정하는 컴포넌트
+    useSearchParams // URL의 쿼리스트링을 읽고 수정할 수 있는 훅
+} from 'react-router-dom'
 
-import { useState } from "react";
+//1. 홈페이지 컴포넌트
+//가장 기본적인 정적 페이지 컴포넌트
+const Home = () => {
+    return(
+        <div style={{padding:'20px'}}>
+            <h1>홈 페이지</h1>
+            <p>리액트 라우터를 이용한 홈페이지 입니다.</p>
+            <p>상단 메뉴를 클릭하여 다른 페이지로 이동해보기</p>
+        </div>
+    );
+};
 
-function Step6_Events() {
+//2. 소개 페이지 컴포넌트
+//정적 컨텐츠를 보여주는 페이지
+const About = () => {
+     return (
+        <div style={{padding : '20px'}}>
+            <h1>소개 페이지</h1>
+            <p>리액트 라우터 사용법을 배우는 예제입니다.</p>
+            <ul>
+                <li>SPA (Single Page Application) 구현</li>
+                <li>페이지 새로 고침 없이 이동</li>
+                <li>URL 변경과 브라우저 히스토리 관리</li>
+            </ul>
+        </div>
+     );
+};
 
-    const [clickCount,setClickCount] = useState(0);
-    const [message,setMessage] = useState("이벤트를 발생시켜보세요");
-    const [formInput, setFormInput] = useState(''); // 입력폼에서 입력값을 다룰 상태값
+//3.연락처 페이지 컴포넌트
+//연락처 정보를 표시하는 정적 페이지 예제
+const Contact = () => {
+    return (
+        <div style={{padding : '20px'}}>
+            <h1>연락처</h1>
+            <div>
+                <p>이메일 : user01@gmail.com</p>
+                <p>전화 : 010-3333-5555</p>
+                <p>주소 : 강남구 역삼동 323번지</p>
+            </div>
+        </div>
+    );
+};
 
-    //클릭 이벤트 처리
-    const handleClic = () => {
-        //해당 클릭 버튼을 눌렀을때 클릭 카운트가 1 증가하고
-        //메시지에는 버튼이 N번 클릭되었습니다. 라는 문구가 들어갈 수 있도록 처리해보기
+//--네비게이션 및 라우터 설정
+//네비게이션 컴포넌트 (공통 메뉴)
+const Navigation = () => {
+    const navStyle = {
+        backgroundColor : 'beige',
+        padding : '15px',
+        marginBottom : '20px',
+        borderRadius : '5px'
+    };
 
-        //해당 위치에서 변경된 상태값을 다뤄야한다면 변수에 담아놓고 처리하기 또는 같은 연산처리 수행하기
-        setClickCount(clickCount + 1);
+    //링크 기본 스타일 정의
+    const linkStyle = {
+        marginRight : '15px',
+        textDecoration : 'none',
+        padding : '8px 12px',
+        borderRadius : '3px',
+        display : 'inline-block'
+    };
 
-        setMessage(`버튼이 ${clickCount + 1}번 클릭되었습니다.`);
-    }
+    return (
+        <nav style={navStyle}>
+            {/* 기존 jsp에서 사용하던 a태그와 같은 역할을 수행하는 Link 컴포넌트 이용해보기
+                네비게이션바에선 활성화 스타일을 추가할 수 있는 NavLink를 이용한다
+                isActive : 활성화 되었는지 여부(boolean값)를 받아서 스타일에 활용 가능
+            */}
+            <NavLink to ="/"
+                style={({isActive}) => ({
+                    ...linkStyle,
+                    backgroundColor : isActive ? 'pink' : 'beige',
+                    color : isActive ? 'white' : 'black',
+                    fontWeight : isActive ? 'bold' : 'normal'
+                })}>
+            HOME
+            </NavLink>
 
-    const handleSubmit = (e) => {
+            {/* NavLink 사용해보기 */}
+            <NavLink to="/about"
+                    style={({isActive}) => ({
+                        ...linkStyle,
+                        backgroundColor : isActive ? 'pink' : 'beige',
+                        color : isActive? 'white' : 'black',
+                        fontWeight : isActive ? 'bold' : 'normal'
+                    })}>
+            소개             
+            </NavLink>   
 
-        e.preventDefault(); 
+            <NavLink to="/contact"
+                    style={({isActive}) =>({
+                        ...linkStyle,
+                        backgroundColor : isActive ? 'pink' : 'beige',
+                        color : isActive ? 'white' : 'black',
+                        fontWeight : isActive ? 'bold' : 'normal'
 
-        if(formInput) {
-            setMessage(`폼이 제출되었습니다. 입력값은 ${formInput}입니다.`);
-            setFormInput("");
-        } else {
-            setMessage(`메시지에 입력값이 비어있습니다. 입력해주세요.`);
-        }
+                    })}>
+            연락처             
+            </NavLink>  
 
-    }
+            {/*동적 라우팅 예제 - 특정 사용자 ID로 링크 설정*/}
+            <NavLink to="/user/user01"
+                style={({isActive}) => ({
+                    ...linkStyle,
+                    backgroundColor : isActive ? 'pink' : 'beige',
+                    color : isActive ? 'white' : 'black',
+                    fontWeight : isActive? 'bold' : 'normal'
 
-    const handleMouseEnter = () => {
-        setMessage(`마우스가 들어왔습니다.`);
-    }
+                })}>
+                사용자 (ID : user01)
+            </NavLink>  
 
-    const handleMouseLeave = () => {
-        setMessage(`마우스가 나갔습니다.`);
-    }
+            {/* 대시 보드 */}
+            <NavLink to="/dashboard"
+                style={({isActive}) => ({
+                    ...linkStyle,
+                    backgroundColor : isActive ? 'pink' : 'beige',
+                    color : isActive ? 'white' : 'black',
+                    fontWeight : isActive? 'bold' : 'normal'
+                })}
+            >
+                대시보드 
+            </NavLink> 
 
-    const handleKeyDown = (e) => {
+            {/* 검색 */}
+            <NavLink to="/search"
+                    style={({isActive}) =>({
+                        ...linkStyle,
+                        backgroundColor : isActive ? 'pink' : 'beige',
+                        color : isActive ? 'white' : 'black',
+                        fontWeight : isActive ? 'bold' : 'normal'
+                    })}>
+            검색
+            </NavLink>      
 
-        if(e.code === 'Enter') {
-            setMessage("Enter키가 눌렸습니다.");
-        }
+            {/* 로그인 */}
+            <NavLink to ="/login"
+                style={({isActive}) => ({
+                    ...linkStyle,
+                    backgroundColor : isActive ? 'pink' : 'beige',
+                    color : isActive ? 'white' : 'black',
+                    fontWeight : isActive ? 'bold' : 'normal'
+                })}>         
+             로그인
+            </NavLink>    
+
+            {/* 관리자 */}
+            <NavLink to="/admin"
+                    style={({isActive})=>({
+                        ...linkStyle, 
+                        backgroundColor : isActive? 'pink' : 'beige',
+                        color : isActive? 'white' : 'black',
+                        fontWeight : isActive? 'bold' : 'normal'
+                    })}>
+                관리자
+            </NavLink>
+        </nav>
+    )
+}
+
+//4. 사용자 프로필 페이지
+//동적 라우팅과 프로그래밍적 네비게이션
+const UserProfile = () => {
+    //useParams 훅을 사용하여 URL에 전달된 userId 파라미터 추출해보기
+    //ex) /user/123과 같은 경로에서 전달된 아이디는 123
+    const {userId} = useParams(); 
+
+    //useLocation 훅을 이용하여 현재 위치정보 가져오기
+    const location = useLocation();
+
+    //useNavigate 훅을 이용하여 네비게이션 함수 가져오기
+    const navigate = useNavigate(); 
+
+    //프로필 편집 페이지 버튼을 눌렀을때 edit 경로로 이동시키는 함수
+    const userEdit = () => {
+        
+        navigate(`/user/${userId}/edit`); 
+
+
         
     }
 
-    const styles = {
-        container : {padding: '20px', maxWidth : '600px', margin : '0px auto'},
-        section : {marginBottom : '30px', padding:'20px', border:'1px solid black', borderRadius : '8px'}, 
-        button : {padding : '10px 20px', margin : '5px', backgroundColor : 'beige', color : 'red', border: 'none', cursor: 'pointer'},
-        input : {padding : '8px', margin:'5px', border:'1px solid black',borderRadius : '4px', width:'200px'},
-        hoverArea : {padding : '20px', backgroundColor : 'pink', border: '2px dashed hotpink', textAlign : 'center', cursor : 'pointer', margin: '10px 0'},
-        message : {padding : '20px', backgroundColor : 'lightblue', border : '1px solid skyblue', borderRadius : '4px', marginTop : '10px'}
+    //브라우저 히스토리에서 이전페이지로 이동시키는 함수
+    const goBack = () => {
+        navigate(-1); // -1은 이전 1은 다음 (기존 js에서 사용한 history.go()와 같은 역할)
     }
-    
+
     return (
-        <div style={styles.container}>
-            <h1>React 이벤트 처리</h1>
-            <p>사용자의 다양한 상호 작용을 처리하는 방법들</p>
+        <div style={{padding : '20px'}}>
+            <h1>사용자 프로필</h1>
+            {/*URL 파라미터 값 화면에 표현*/}
+            <p>사용자 ID(전달값) : {userId}</p>
+            {/*현재 경로 표시*/}
+            <p>현재 경로 : {location.pathname}</p>
+            <p>동적 라우팅 예제 사용</p>
 
-            <div style={styles.message}>
-                메시지 : {message}
-            </div>
+            <div style={{marginTop:'20px'}}>
+                {/*버튼 클릭으로 네비게이션 사용(navigate dlehd)*/}
+                <button style={{marginRight : '10px', padding : '5px 10px'}}
+                        onClick={userEdit}
+                >
+                    프로필 편집
+                </button>
 
-            <div style={styles.section}>
-                <h2>클릭 이벤트</h2>
-                <button style={styles.button} onClick={() => handleClic()}>
-                    클릭하세요 (클릭 횟수 : {clickCount})
+                <button style={{padding : '5px 10px'}} onClick={goBack}>
+                    이전 페이지
                 </button>
             </div>
+        </div>
+    )
 
-            {/* handleSubmit 이벤트 핸들러를 정의하여
-                입력된 텍스트가 존재할때 메시지에 폼이 제출되었습니다. 입력값은 OOO입니다. 를 추가 후
-                입력폼 비워주기 작업
-                만약 텍스트가 존재하지 않을때 폼제출 이벤트가 동작한다면
-                메시지에 입력값이 비어있습니다. 입력해주세요. 를 출력하시오
-                *기본 이벤트 동작을 막는 함수 e.preventDefault(); 참고  
-             */}
+}
 
-            <div style={styles.section}>
-                <h2>폼 제출 이벤트</h2>
+//5. 사용자 편집 페이지 (중첩 라우팅 예제)
+//폼 처리와 상태 관리를 포함한 메시지
+const UserEdit = () => {
+    //URL 파라미터에서 userId 꺼내오기
+    //UserEdit에서 userId를 가져올 수 있는 이유는
+    //UserProfile에서 navigate로 URL을 /user/:userId/edit 형태로 바꿔줬고, 
+    //그 결과 현재 URL에서 useParams가 userId를 파싱해오기 때문
+    const {userId} = useParams(); 
+    const navigate = useNavigate();
 
-                <form onSubmit={handleSubmit}>
+    //폼 입력 상태 관리를 위한 useState 훅
+    const [name,setName] = useState('');
+    const [email,setEmail] = useState('');
+
+    //폼 제출 처리 함수
+    const handleSubmit = (e) => {
+        //기존 요청되는 기본이벤트 막아주기
+        e.preventDefault();
+        //alert으로 사용자 OOO정보가 저장되었습니다 \n 이름 : OOO \n 이메일 : OOO 나올 수 있도록 처리
+        alert(`사용자 ${userId}정보가 저장되었습니다. \n 이름 : ${name}\n 이메일 : ${email}`);
+
+        navigate(`/user/${userId}`); 
+    }
+
+    return (
+        <div style={{padding : '20px'}}>
+            <h1>사용자 편집</h1>
+            <p>사용자 ID : {userId}</p>
+            <p>사용자 이름 : {name}</p>
+            <p>사용자 이메일 : {email}</p>
+
+            <form style={{marginTop : '20px'}} onSubmit={handleSubmit}>
+                <div style={{marginBottom : '15px'}}>
+                    <label htmlFor="name">이름</label>
                     <input type="text"
-                            style={styles.input}
-                            value={formInput}
-                            onChange={(e) => {
-                                setFormInput(e.target.value);
-                            }}
-                            placeholder="텍스트 입력"
-                     />     
-
-                     <button style={styles.button} type="submit">제출</button>  
-                </form>
-            </div>
-
-            {/* 마우스가 들어왔을땐 메시지에 마우스가 들어왔습니다. 나갔을땐 메시지에 마우스가 나갔습니다. 처리 */}
-            <div style={styles.section}>
-                <h2>마우스 이벤트</h2>
-                <div style={styles.hoverArea}
-                    onMouseEnter={handleMouseEnter}
-                    onMouseLeave={handleMouseLeave}
-                >
-                    마우스를 올려보세요 
+                            id='name'
+                            style={{padding : '5px',width : '200px'}}
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}>
+                    </input>
                 </div>
-            </div>
 
-            {/*키보드에서 엔터키를 눌렀을 경우 메시지에 Enter가 눌렸습니다. 를 출력해보세요 */}
-            <div style={styles.section}>
-                <h2>키보드 이벤트</h2>
+                <div style={{marginBottom : '15px'}}>
+                    <label htmlFor="email">이메일</label>
+                    <input type="text"
+                            id='email'
+                            style={{padding : '5px', width : '200px'}}
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                    />        
+                </div>
+
+                {/*폼 제출 버튼 */}
+                <button type='submit' style={{padding : '8px 15px',marginRight : '10px'}}>
+                    저장
+                </button>
+
+                <button type='button' style={{padding : '8px 15px'}}
+                        onClick={()=>navigate(`/user/${userId}`)}>
+                취소 
+                </button>
+            </form>
+        </div>
+    )
+
+}
+
+//6. 대시보드 페이지 (중첩 라우팅 부모 컴포넌트)
+//중첩 라우팅의 부모 컴포넌트 예제
+const Dashboard = () => {
+    return (
+        <div style={{padding : '20px'}}>
+            <h1>대시보드</h1>
+
+            {/* NavLink를 이용하여 활성 상태 스타일 적용*/}
+            <nav style={{marginBottom : '20px'}}>
+                <NavLink to="/dashboard/overview"
+                        style={({isActive}) => ({
+                            marginRight : '15px',
+                            color : isActive ? 'red' : 'blue',
+                            fontWeight : isActive ? 'bold' : 'normal'
+                        })}>
+                개요 
+                </NavLink>
+
+                <NavLink to="/dashboard/analytics"
+                        style={({isActive}) => ({
+                            marginRight : '15px',
+                            color : isActive ? 'red' : 'blue',
+                            fontWeight : isActive? 'bold' : 'normal'
+                        })}>
+                분석
+                </NavLink>   
+
+                <NavLink to ="/dashboard/settings"
+                        style={({isActive}) => ({
+                            marginRight : '15px',
+                            color : isActive ? 'red' : 'blue',
+                            fontWeight : isActive? 'bold' : 'normal'
+                        })}>
+                설정 
+                </NavLink>    
+            </nav>
+
+            {/* Outlet : 중첩 라우팅에서 자식 컴포넌트가 렌더링 될 위치를 지정하는 컴포넌트*/}
+            {/* 위에 작성한 하위 컴포넌트 3가지 중에 요청 경로에 맞는 컴포넌트가 Outlet 컴포넌트 위치에 렌더링 된다. */}
+
+            <Outlet></Outlet>
+        </div>
+    );
+};
+
+//7. 대시보드 하위 페이지들 (중첩 라우팅의 자식 컴포넌트들)
+//각각 대시보드 내부에서 렌더링 되는 서브 페이지
+const Overview = () => (
+    <div style={{padding : '15px', backgroundColor : 'beige', borderRadius : '5px'}}>
+        <h3>개요</h3>
+        <p>전체 시스템 개요를 보여주는 페이지 입니다.</p>
+    </div>
+);
+
+const Analytics = () => (
+    <div style ={{padding : '15px', backgroundColor : 'bisque', borderRadius : '5px'}}>
+        <h3>분석</h3>
+        <p>데이터 분석 결과를 보여주는 페이지 입니다.</p>
+    </div>
+);
+
+const Settings = () => {
+    <div style={{padding : '15px', backgroundColor : 'lightcyan', borderRadius : '5px'}}>
+        <h3>설정</h3>
+        <p>시스템 설정을 관리하는 페이지 입니다. </p>
+    </div>
+}
+
+//8. 쿼리 스트링 예제 페이지
+//URL 쿼리 파라미터 처리 예제 ex) /search?keyword=검색어
+const Search = () => {
+    const location = useLocation();
+    const navigate = useNavigate();
+    const [searchTerm,setSearchTerm] = useState('');
+
+    //useSearchParams() 훅을 사용하여 추출
+    const [searchParams, setSearchParams] = useSearchParams();
+
+    const currentSearch = searchParams.get('keyword') || ''; // keyword파라미터값 추출
+
+    //검색 폼 제출 처리 이벤트 핸들러
+    const handleSearch = (e) => {
+        //기본 이벤트 막기
+        e.preventDefault();
+
+        if(searchTerm.trim()) { //검색어 공백제거했을때 존재한다면
+            setSearchParams({keyword:currentSearch}); 
+            //요청 경로에 쿼리스트링 추가하여 요청해보기
+            navigate(`/search?keyword=${searchTerm.trim()}`);
+        }
+    };
+
+    return (
+        <div style={{padding : '20px'}}>
+            <h1>검색</h1>
+
+            <form style={{marginBottom : '20px'}} onSubmit={handleSearch}>
                 <input type="text"
-                        style={styles.input}
-                        onKeyDown={handleKeyDown}
-                        placeholder="Enter키를 눌러보세요"
-                />        
-            </div>
+                        placehlder='검색어를 입력하세요'
+                        style={{padding : '8px', width : '300px', marginRight : '10px'}}
+                        value = {searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                />
+
+                <button type='submit' style={{padding : '8px 15px'}}>
+                    검색    
+                </button>        
+            </form>
+
+            {/* 검색결과 표시영역 */}
+
+            {
+                //검색 결과가 있다면
+                currentSearch && 
+                (<div style={{padding : '15px', backgroundColor : 'beige', borderRadius : '5px'}}>
+                    <h3>검색 결과</h3>
+                    <p>검색어 : {currentSearch}</p>
+                    <p>현재 URL : {location.pathname + location.search}</p>
+                 </div>
+                )    
+            }
 
 
         </div>
     )
+
+
+
 }
+
+//9. 404 페이지 (존재하지 않는 페이지)
+//라우트에 매칭되지 않는 모든 경로에 대한 페이지
+const NotFound = () => {
+    const location = useLocation();
+
+    return (
+        <div style={{padding : '2px', textAlign : 'center'}}>
+            <h1>404 - 페이지를 찾을 수 없습니다.</h1>
+            {/*요청된 경로 표시*/}
+            <p>요청하신 페이지 {location.pathname}가 존재하지 않습니다.</p>
+            {/*홈으로 돌아가는 링크 */}
+            <Link to='/' style={{color : 'blue', textDecoration : 'underline'}}>
+                홈으로 돌아가기 
+            </Link>
+        </div>
+    )
+}
+
+//10. 보호된 라우트 (로그인 체크 예제)
+//인증이 필요한 페이지를 보호하는 패턴
+const ProtectedRoute = ({children}) => {
+    //인증여부 상태값
+    const [isAuth, setIsAuth] = useState(false);
+
+    //로딩처리 상태값
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect (() => {
+        //실제 데이터가 있다면 해당 로그인 처리 후 전달받은 인증 토큰을 사용하게 된다.
+
+        //임의로 진행
+        const checkAuth = () => {
+            setTimeout(() => {
+                //브라우저의 저장소중 localStorage에 담겨있던 토큰 확인
+                const token = localStorage.getItem('authToken'); // 토큰 추출
+                //token 변수에 논리부정을 하면 있을때 false가 처리된다. 토큰이 있다는것을 판별주기 위해 논리부정 두번 처리
+                //토큰 여부를 위에 선언한 isAuth에 처리
+                setIsAuth(!!token); //토큰이 있을때 true 없으면 false
+                setIsLoading(false); //로딩 상태값 false(로딩 처리 그만)
+            },2000);
+        };
+
+        checkAuth(); //위 구문 호출 
+
+    },[]); // 해당 컴포넌트가 처음 마운트 되었을때 수행되는 구문
+
+    //로딩 중일때 표시할 컴포넌트
+    if(isLoading) {
+        return <div style={{padding : '20px', textAlign : 'center'}}>⌛로딩 중...</div>
+    }
+
+    //인증된 경우 자식 컴포넌트 렌더링, 아닌 경우 로그인 페이지로 리다이렉트 처리
+    //replace 속성으로 현재 페이지 대체 (리다이렉트 처리 후 url 정보)
+    return isAuth ? children : <Navigate to = '/login' replace/> 
+
+
+    /*
+        localStorage, sessionStorage
+        브라우저에서 제공하는 저장소
+
+        -localStorage
+         사용자가 직접 데이터를 지우거나 자바스크립트 코드로 지우지 않는 한 영구적으로 남아있는 데이터 저장소
+         컴퓨터를 재부팅하거나 브라우저를 닫아도 데이터가 유지된다. (실제 존재하는 데이터)
+
+         -주요 용도
+         - 자동 로그인 처리 : 로그인 토큰을 저장해서 사용자가 다시 방문했을때 자동 로그인 처리
+         - 다크 모드 / 라이트 모드 : 사용자 테마 설정 유지
+         - 장바구니 : 비회원 장바구니처럼 사용자가 다시 방문해도 유지되는 정보...
+
+         -sessionStorage 
+         현재 열려있는 창이 닫히면 사라지는 임시 저장소 (기존 HttpSession과 유사)
+         각 탭 별로 sessionStorage를 가지게 된다
+
+         -주요 용도
+         -여러 단계의 입력폼일 경우 잠시 기존 입력값을 저장할때
+         -오늘 하루 보지 않기와 같은 팝업 상태 저장 (상황에 따라 localStorage 나 cookies 이용)
+    */
+
+}
+
+
+//메인 컴포넌트
+//전체 애플리케이션의 라우팅 구조를 정의하는 최상위 컴포넌트
+const RouterComponent = () => {
+    return (
+        //라우팅 처리를 하기위해 (Route,Link 컴포넌트를 사용한다.)
+        //최상단에는 BrowserRouter 컴포넌트로 감싸주어야 한다.
+        <Router>
+            <>
+                <h1 style={{textAlign : 'center',color : 'darkgray'}}>
+                    React Router 예제
+                </h1>
+
+                {/* 공통 네비게이션바 위치 */}
+                <Navigation></Navigation>
+
+                {/* Routes : 모든 Route 컴포넌트를 감싸주는 컴포넌트 */}
+                <Routes>
+
+                    {/*기본 컴포넌트 라우팅*/}
+                    {/* / 요청일 경우 보여질 컴포넌트 설정 */}
+                    {/* path : 요청 경로, element : 보여줄 컴포넌트 */}
+
+                    <Route path='/' element={<Home></Home>}></Route>
+                    <Route path='/about' element={<About/>}></Route>
+                    <Route path='/contact' element={<Contact></Contact>}></Route>
+
+                    <Route path='/user/:userId' element={<UserProfile></UserProfile>}></Route>
+                    <Route path='/user/:userId/edit' element={<UserEdit></UserEdit>}></Route>
+
+                    {/* 중첩 라우팅 예제*/}
+                    {/* 부모 Route 안에 자식 Route 들을 정의 */}
+                    <Route path='/dashboard' element={<Dashboard></Dashboard>}>
+                        {/* index Route : 부모 경로와 정확히 일치할때 보여주고자 하는 컴포넌트가 있다면 렌더링 처리*/}
+                        {/* <Route index element={<Navigate to='overview' replace/>}/>} */}
+                        
+                        <Route path='overview' element={<Overview/>}/>
+                        <Route path='analytics' element={<Analytics/>}/>
+                        <Route path='settings' element={<Settings/>}/>
+                    </Route>
+
+                    {/* 검색 */}
+                    <Route path ='/search' element={<Search/>}></Route>
+
+                    {/*만약 위에있는 Route들에서 처리되지 않는 요청의 경우 에러페이지가 띄워질수 있도록 설정*/}}
+                    {/* 404 페이지 : 와일드 카드 경로 (모든요청 '*') */}
+                    <Route path='*' element={<NotFound/>}/>
+
+                    {/*보호된 라우트 예제*/}
+                    {/*로그인 페이지 */}
+                    <Route path="/login" element={<Login/>}/>
+
+                    {/* ProtectedRoute 컴포넌트로 Admin 컴포넌트를 감싸서 인증 체크하기 */}
+                    <Route path="/admin" element={<ProtectedRoute>
+                                                        <Admin></Admin>
+                                                    </ProtectedRoute>}/>
+                    
+                </Routes>
+
+            </>
+
+        </Router>
+    )
+}
+
+
+
+
